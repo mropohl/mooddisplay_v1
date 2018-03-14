@@ -111,7 +111,12 @@ p5.disableFriendlyErrors = true;
 const width = window.innerWidth;
 const height = window.innerHeight;
 const rad = width / 2;
+
 let maxDist = width / 2;
+let debug = false;
+let movementFactor = 500;
+let particleMovementSpeed = 0.5;
+
 const mX = width / 2;
 const mY = height / 2;
 
@@ -138,8 +143,6 @@ function draw() {
         const isAnimating = particle.animate(mX, mY, maxDist);
 
         if (!isAnimating) {
-            console.log(firstDraw);
-
             const currentMood = particle.mood;
             let newMood = particle.mood;
 
@@ -160,7 +163,6 @@ function draw() {
             y = Math.round(y);
 
             particle.firstDraw = false;
-
             particle.mood = newMood;
             particle.targetX = x;
             particle.targetY = y;
@@ -173,6 +175,8 @@ function draw() {
     drawEdges(vertices, 600);
 
     particles.map(particle => {
+        particle.speed = particleMovementSpeed;
+        particle.debug = debug;
         particle.draw();
     });
 
@@ -200,7 +204,8 @@ const calculateTargetCords = (
 
     do {
         if (currentMood === newMood && !firstDraw) {
-            target.x = currentX + random(100, 500) - 200;
+            target.x =
+                currentX + random(100, movementFactor) - movementFactor / 2;
         } else {
             target.x = random(width);
         }
@@ -213,7 +218,8 @@ const calculateTargetCords = (
 
     do {
         if (currentMood === newMood && !firstDraw) {
-            target.y = currentY + random(100, 500) - 200;
+            target.y =
+                currentY + random(100, movementFactor) - movementFactor / 2;
         } else {
             target.y = random(height);
         }
@@ -416,13 +422,21 @@ function createParticles(numberOfParticles) {
 }
 
 const sliderControlSetup = () => {
-    const slider = document.getElementById("slider_1");
-    console.log(slider);
-    slider.setAttribute("min", 0);
-    slider.setAttribute("max", maxDist);
-    slider.oninput = function() {
-        console.log(this.value);
+    const slider1 = document.getElementById("slider_1");
+    slider1.setAttribute("min", 0);
+    slider1.setAttribute("max", maxDist);
+    slider1.oninput = function() {
         maxDist = this.value;
+    };
+
+    const slider2 = document.getElementById("slider_2");
+    slider2.oninput = function() {
+        movementFactor = this.value;
+    };
+
+    const slider3 = document.getElementById("slider_3");
+    slider3.oninput = function() {
+        particleMovementSpeed = this.value;
     };
 };
 

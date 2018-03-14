@@ -3,7 +3,12 @@ p5.disableFriendlyErrors = true;
 const width = window.innerWidth;
 const height = window.innerHeight;
 const rad = width / 2;
+
 let maxDist = width / 2;
+let debug = false;
+let movementFactor = 500;
+let particleMovementSpeed = 0.5;
+
 const mX = width / 2;
 const mY = height / 2;
 
@@ -30,8 +35,6 @@ function draw() {
         const isAnimating = particle.animate(mX, mY, maxDist);
 
         if (!isAnimating) {
-            console.log(firstDraw);
-
             const currentMood = particle.mood;
             let newMood = particle.mood;
 
@@ -52,7 +55,6 @@ function draw() {
             y = Math.round(y);
 
             particle.firstDraw = false;
-
             particle.mood = newMood;
             particle.targetX = x;
             particle.targetY = y;
@@ -65,6 +67,8 @@ function draw() {
     drawEdges(vertices, 600);
 
     particles.map(particle => {
+        particle.speed = particleMovementSpeed;
+        particle.debug = debug;
         particle.draw();
     });
 
@@ -92,7 +96,8 @@ const calculateTargetCords = (
 
     do {
         if (currentMood === newMood && !firstDraw) {
-            target.x = currentX + random(100, 500) - 200;
+            target.x =
+                currentX + random(100, movementFactor) - movementFactor / 2;
         } else {
             target.x = random(width);
         }
@@ -105,7 +110,8 @@ const calculateTargetCords = (
 
     do {
         if (currentMood === newMood && !firstDraw) {
-            target.y = currentY + random(100, 500) - 200;
+            target.y =
+                currentY + random(100, movementFactor) - movementFactor / 2;
         } else {
             target.y = random(height);
         }
