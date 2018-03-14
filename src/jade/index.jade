@@ -12,7 +12,10 @@ html(lang="en")
            
     body
 
-        div.slide-con
+        button#btn-slider-menu Slider Menu
+
+        div#slider-menu.slide-con
+
             p
                 label(for="slider_1").label Max Distance
                 input#slider_1(type="range" min="1" max="100" value="50").slider
@@ -23,7 +26,7 @@ html(lang="en")
             
             p
                 label(for="slider_3").label Particle Movement Speed
-                input#slider_3(type="range" min="0" max="2" value=".5").slider
+                input#slider_3(type="range" min="0" max="2" value="1").slider
 
 
         script(src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.js")

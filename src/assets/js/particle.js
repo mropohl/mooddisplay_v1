@@ -12,6 +12,7 @@ class Particle {
         this.bounds = null;
         this.firstDraw = true;
         this.speed = 0.5;
+        this.m = null;
     }
 
     draw() {
@@ -113,8 +114,32 @@ class Particle {
         this.b = colors[2].b * percent + colors[0].b * (1 - percent);
 
         if (this.x === this.targetX && this.y === this.targetY) {
+            this.m = null;
             return false;
         } else {
+            /*
+
+            really interesting result
+
+            const mX = (this.targetX - this.speed) / this.x;
+            const mY = (this.targetY - this.speed) / this.y;
+
+            Math.round((this.x = mX * this.x + this.speed));
+            Math.round((this.y = mY * this.y + this.speed));
+            */
+
+            /*
+            if (!this.m) {
+                this.m =
+                    Math.abs(this.y - this.targetY) /
+                    Math.abs(this.x - this.targetX);
+                console.log(this.m);
+            }
+
+            this.x = Math.round(this.m * this.x * 0.002);
+            this.y = Math.round(this.m * this.y * 0.002);
+*/
+
             const directionX = this.x - this.targetX;
             const directionY = this.y - this.targetY;
 
