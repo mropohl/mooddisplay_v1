@@ -10,6 +10,8 @@ class Particle {
         this.mood = mood;
         this.debug = debug;
         this.bounds = null;
+        this.firstDraw = true;
+        this.speed = 0.5;
     }
 
     draw() {
@@ -22,6 +24,11 @@ class Particle {
             text("Mood: " + this.mood, this.x, this.y + 10);
             strokeWeight(0.5);
             stroke(0, 0, 0);
+
+            text("x: " + this.x + " | y: " + this.y, this.x, this.y + 20);
+            strokeWeight(0.5);
+            stroke(0, 0, 0);
+
             line(this.x, this.y, this.targetX, this.targetY);
 
             if (this.bounds) {
@@ -112,15 +119,15 @@ class Particle {
             const directionY = this.y - this.targetY;
 
             if (directionX > 0) {
-                this.x -= 1;
+                this.x -= this.speed;
             } else if (directionX < 0) {
-                this.x += 1;
+                this.x += this.speed;
             }
 
             if (directionY > 0) {
-                this.y -= 1;
+                this.y -= this.speed;
             } else if (directionY < 0) {
-                this.y += 1;
+                this.y += this.speed;
             }
 
             return true;
@@ -134,15 +141,10 @@ function createParticles(numberOfParticles) {
     for (var i = 0; i < numberOfParticles; i++) {
         const mood = random(1);
 
-        const distX = mood * width / 2;
-        const distY = mood * height / 2;
+        const x = Math.round(random(width));
+        const y = Math.round(random(height));
 
-        const color = colors[floor(random(colors.length))];
-
-        const newX = floor(random(width / 2 - distX, width / 2 + distX));
-        const newY = floor(random(height / 2 - distY, height / 2 + distY));
-
-        result.push(new Particle(newX, newY, mood, color.r, color.g, color.b));
+        result.push(new Particle(x, y, mood));
     }
 
     return result;

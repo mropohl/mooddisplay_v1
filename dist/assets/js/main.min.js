@@ -127,6 +127,8 @@ function setup() {
     console.log("width: " + width, "height: " + height);
 }
 
+let firstDraw = true;
+
 function draw() {
     background(0, 0, 0);
     drawBackground(backgroundImg, 8);
@@ -135,26 +137,33 @@ function draw() {
         const isAnimating = particle.animate(mX, mY, maxDist);
 
         if (!isAnimating) {
+            console.log(firstDraw);
+
+            const currentMood = particle.mood;
+            let newMood = particle.mood;
+
             const rand = Math.floor(random(11));
-            if (rand < 4) particle.mood = Math.random(1);
-
-            const maxMoveDist = 200;
-
-            const distX = particle.mood * width / 2;
-            const distY = particle.mood * height / 2;
+            if (rand < 0.5) newMood = Math.random(1);
 
             let { x, y, bounds } = calculateTargetCords(
                 particle.x,
                 particle.y,
-                particle.mood,
+                currentMood,
+                newMood,
                 width,
-                height
+                height,
+                particle.firstDraw
             );
 
             x = Math.round(x);
             y = Math.round(y);
 
-            particle.updateTargets(x, y, bounds);
+            particle.firstDraw = false;
+
+            particle.mood = newMood;
+            particle.targetX = x;
+            particle.targetY = y;
+            particle.bounds = bounds;
         }
     });
 
@@ -172,15 +181,28 @@ function draw() {
     text("FPS: " + fps.toFixed(2), 10, height - 10);
 }
 
-const calculateTargetCords = (currentX, currentY, mood, width, height) => {
-    const { x, y } = calculateBounds(mood, width, height);
+const calculateTargetCords = (
+    currentX,
+    currentY,
+    currentMood,
+    newMood,
+    width,
+    height,
+    first
+) => {
+    const { x, y } = calculateBounds(newMood, width, height);
+
     const target = {};
 
-    var distX = 0;
-    var distY = 0;
+    let distX = 0;
+    let distY = 0;
 
     do {
-        target.x = random(width);
+        if (currentMood === newMood && !firstDraw) {
+            target.x = currentX + random(100, 500) - 200;
+        } else {
+            target.x = random(width);
+        }
     } while (
         !(
             (target.x > x.negBoundMin && target.x < x.negBoundMax) ||
@@ -189,7 +211,11 @@ const calculateTargetCords = (currentX, currentY, mood, width, height) => {
     );
 
     do {
-        target.y = random(height);
+        if (currentMood === newMood && !firstDraw) {
+            target.y = currentY + random(100, 500) - 200;
+        } else {
+            target.y = random(height);
+        }
     } while (
         !(
             (target.y > y.negBoundMin && target.y < y.negBoundMax) ||
@@ -248,6 +274,8 @@ class Particle {
         this.mood = mood;
         this.debug = debug;
         this.bounds = null;
+        this.firstDraw = true;
+        this.speed = 0.5;
     }
 
     draw() {
@@ -260,6 +288,11 @@ class Particle {
             text("Mood: " + this.mood, this.x, this.y + 10);
             strokeWeight(0.5);
             stroke(0, 0, 0);
+
+            text("x: " + this.x + " | y: " + this.y, this.x, this.y + 20);
+            strokeWeight(0.5);
+            stroke(0, 0, 0);
+
             line(this.x, this.y, this.targetX, this.targetY);
 
             if (this.bounds) {
@@ -350,15 +383,15 @@ class Particle {
             const directionY = this.y - this.targetY;
 
             if (directionX > 0) {
-                this.x -= 1;
+                this.x -= this.speed;
             } else if (directionX < 0) {
-                this.x += 1;
+                this.x += this.speed;
             }
 
             if (directionY > 0) {
-                this.y -= 1;
+                this.y -= this.speed;
             } else if (directionY < 0) {
-                this.y += 1;
+                this.y += this.speed;
             }
 
             return true;
@@ -372,15 +405,10 @@ function createParticles(numberOfParticles) {
     for (var i = 0; i < numberOfParticles; i++) {
         const mood = random(1);
 
-        const distX = mood * width / 2;
-        const distY = mood * height / 2;
+        const x = Math.round(random(width));
+        const y = Math.round(random(height));
 
-        const color = colors[floor(random(colors.length))];
-
-        const newX = floor(random(width / 2 - distX, width / 2 + distX));
-        const newY = floor(random(height / 2 - distY, height / 2 + distY));
-
-        result.push(new Particle(newX, newY, mood, color.r, color.g, color.b));
+        result.push(new Particle(x, y, mood));
     }
 
     return result;
