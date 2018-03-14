@@ -1,5 +1,5 @@
 class Particle {
-    constructor(x, y, mood, r, g, b, debug = true) {
+    constructor(x, y, mood, r, g, b, debug = false) {
         this.x = x;
         this.y = y;
         this.targetX = x;
@@ -23,6 +23,7 @@ class Particle {
             strokeWeight(0.5);
             stroke(0, 0, 0);
             line(this.x, this.y, this.targetX, this.targetY);
+
             if (this.bounds) {
                 strokeWeight(0.5);
                 stroke(0, 0, 0);
@@ -91,7 +92,6 @@ class Particle {
         this.targetX = x;
         this.targetY = y;
         this.bounds = bounds;
-        console.log(this.bounds);
     }
 
     animate(mX, mY, maxDist) {

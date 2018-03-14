@@ -14,7 +14,7 @@ let particles;
 function setup() {
     canvas = createCanvas(window.innerWidth, window.innerHeight);
     backgroundImg = createImage(width, height);
-    particles = createParticles(1);
+    particles = createParticles(15);
     frameRate(30);
     console.log("width: " + width, "height: " + height);
 }
@@ -28,7 +28,7 @@ function draw() {
 
         if (!isAnimating) {
             const rand = Math.floor(random(11));
-            particle.mood = Math.random(1);
+            if (rand < 4) particle.mood = Math.random(1);
 
             const maxMoveDist = 200;
 
@@ -68,6 +68,9 @@ const calculateTargetCords = (currentX, currentY, mood, width, height) => {
     const { x, y } = calculateBounds(mood, width, height);
     const target = {};
 
+    var distX = 0;
+    var distY = 0;
+
     do {
         target.x = random(width);
     } while (
@@ -78,7 +81,7 @@ const calculateTargetCords = (currentX, currentY, mood, width, height) => {
     );
 
     do {
-        target.y = random(width);
+        target.y = random(height);
     } while (
         !(
             (target.y > y.negBoundMin && target.y < y.negBoundMax) ||
