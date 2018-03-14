@@ -1,5 +1,5 @@
 class Particle {
-    constructor(x, y, mood, r, g, b) {
+    constructor(x, y, mood, r, g, b, debug = true) {
         this.x = x;
         this.y = y;
         this.targetX = x;
@@ -8,17 +8,90 @@ class Particle {
         this.g = g;
         this.b = b;
         this.mood = mood;
+        this.debug = debug;
+        this.bounds = null;
     }
 
     draw() {
         noStroke();
         fill("white");
         ellipse(this.x, this.y, 10);
+        if (this.debug) {
+            fill(255);
+            stroke(0);
+            text("Mood: " + this.mood, this.x, this.y + 10);
+            strokeWeight(0.5);
+            stroke(0, 0, 0);
+            line(this.x, this.y, this.targetX, this.targetY);
+            if (this.bounds) {
+                strokeWeight(0.5);
+                stroke(0, 0, 0);
+                line(
+                    this.bounds.x.negBoundMin,
+                    this.bounds.y.negBoundMin,
+                    this.bounds.x.posBoundMax,
+                    this.bounds.y.negBoundMin
+                );
+
+                line(
+                    this.bounds.x.negBoundMin,
+                    this.bounds.y.negBoundMin,
+                    this.bounds.x.negBoundMin,
+                    this.bounds.y.posBoundMax
+                );
+
+                line(
+                    this.bounds.x.negBoundMin,
+                    this.bounds.y.posBoundMax,
+                    this.bounds.x.posBoundMax,
+                    this.bounds.y.posBoundMax
+                );
+
+                line(
+                    this.bounds.x.posBoundMax,
+                    this.bounds.y.negBoundMin,
+                    this.bounds.x.posBoundMax,
+                    this.bounds.y.posBoundMax
+                );
+
+                //inner
+
+                line(
+                    this.bounds.x.negBoundMax,
+                    this.bounds.y.negBoundMax,
+                    this.bounds.x.posBoundMin,
+                    this.bounds.y.negBoundMax
+                );
+
+                line(
+                    this.bounds.x.negBoundMax,
+                    this.bounds.y.negBoundMax,
+                    this.bounds.x.negBoundMax,
+                    this.bounds.y.posBoundMin
+                );
+
+                line(
+                    this.bounds.x.negBoundMax,
+                    this.bounds.y.posBoundMin,
+                    this.bounds.x.posBoundMin,
+                    this.bounds.y.posBoundMin
+                );
+
+                line(
+                    this.bounds.x.posBoundMin,
+                    this.bounds.y.negBoundMax,
+                    this.bounds.x.posBoundMin,
+                    this.bounds.y.posBoundMin
+                );
+            }
+        }
     }
 
-    updateTargets(x, y) {
+    updateTargets(x, y, bounds) {
         this.targetX = x;
         this.targetY = y;
+        this.bounds = bounds;
+        console.log(this.bounds);
     }
 
     animate(mX, mY, maxDist) {
