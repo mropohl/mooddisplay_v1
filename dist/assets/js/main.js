@@ -111,7 +111,7 @@ p5.disableFriendlyErrors = true;
 const width = window.innerWidth;
 const height = window.innerHeight;
 const rad = width / 2;
-const maxDist = width / 2;
+let maxDist = width / 2;
 const mX = width / 2;
 const mY = height / 2;
 
@@ -120,6 +120,7 @@ let backgroundImg;
 let particles;
 
 function setup() {
+    sliderControlSetup();
     canvas = createCanvas(window.innerWidth, window.innerHeight);
     backgroundImg = createImage(width, height);
     particles = createParticles(15);
@@ -413,6 +414,17 @@ function createParticles(numberOfParticles) {
 
     return result;
 }
+
+const sliderControlSetup = () => {
+    const slider = document.getElementById("slider_1");
+    console.log(slider);
+    slider.setAttribute("min", 0);
+    slider.setAttribute("max", maxDist);
+    slider.oninput = function() {
+        console.log(this.value);
+        maxDist = this.value;
+    };
+};
 
 const calculateVertices = (particles, maxDist) => {
     const result = new Set();

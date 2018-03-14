@@ -3,7 +3,7 @@ p5.disableFriendlyErrors = true;
 const width = window.innerWidth;
 const height = window.innerHeight;
 const rad = width / 2;
-const maxDist = width / 2;
+let maxDist = width / 2;
 const mX = width / 2;
 const mY = height / 2;
 
@@ -12,6 +12,7 @@ let backgroundImg;
 let particles;
 
 function setup() {
+    sliderControlSetup();
     canvas = createCanvas(window.innerWidth, window.innerHeight);
     backgroundImg = createImage(width, height);
     particles = createParticles(15);
