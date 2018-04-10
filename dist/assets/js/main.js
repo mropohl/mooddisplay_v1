@@ -114,7 +114,7 @@ const rad = width / 2;
 
 let maxDist = width / 2;
 let debug = false;
-let movementFactor = 500;
+let movementFactor = 200;
 let particleMovementSpeed = 0.5;
 
 const mX = width / 2;
@@ -143,17 +143,17 @@ function draw() {
         const isAnimating = particle.animate(mX, mY, maxDist);
 
         if (!isAnimating) {
-            const currentMood = particle.mood;
-            let newMood = particle.mood;
+            const currentPleasentness = particle.pleasentness;
+            let newPleasentness = particle.pleasentness;
 
             const rand = Math.floor(random(11));
-            if (rand < 0.5) newMood = Math.random(1);
+            // if (rand < 0.05) newPleasentness = Math.random(1);
 
             let { x, y, bounds } = calculateTargetCords(
                 particle.x,
                 particle.y,
-                currentMood,
-                newMood,
+                currentPleasentness,
+                newPleasentness,
                 width,
                 height,
                 particle.firstDraw
@@ -163,7 +163,7 @@ function draw() {
             y = Math.round(y);
 
             particle.firstDraw = false;
-            particle.mood = newMood;
+            particle.pleasentness = newPleasentness;
             particle.targetX = x;
             particle.targetY = y;
             particle.bounds = bounds;
@@ -189,80 +189,86 @@ function draw() {
 const calculateTargetCords = (
     currentX,
     currentY,
-    currentMood,
-    newMood,
+    currentPleasentness,
+    newPleasentness,
     width,
     height,
-    first
+    firstDraw
 ) => {
-    const { x, y } = calculateBounds(newMood, width, height);
-
+    const { xBounds, yBounds } = calculateBounds(
+        newPleasentness,
+        width,
+        height
+    );
+    console.log("calculating cords");
     const target = {};
 
     let distX = 0;
     let distY = 0;
 
     do {
-        if (currentMood === newMood && !firstDraw) {
+        if (currentPleasentness === newPleasentness) {
             target.x =
-                currentX + random(100, movementFactor) - movementFactor / 2;
+                currentX + random(0, movementFactor) - movementFactor / 2;
         } else {
             target.x = random(width);
         }
     } while (
         !(
-            (target.x > x.negBoundMin && target.x < x.negBoundMax) ||
-            (target.x > x.posBoundMin && target.x < x.posBoundMax)
+            (target.x > xBounds.negBoundMin &&
+                target.x < xBounds.negBoundMax) ||
+            (target.x > xBounds.posBoundMin && target.x < xBounds.posBoundMax)
         )
     );
 
     do {
-        if (currentMood === newMood && !firstDraw) {
+        if (currentPleasentness === newPleasentness) {
             target.y =
-                currentY + random(100, movementFactor) - movementFactor / 2;
+                currentY + random(0, movementFactor) - movementFactor / 2;
         } else {
             target.y = random(height);
         }
     } while (
         !(
-            (target.y > y.negBoundMin && target.y < y.negBoundMax) ||
-            (target.y > y.posBoundMin && target.y < y.posBoundMax)
+            (target.y > yBounds.negBoundMin &&
+                target.y < yBounds.negBoundMax) ||
+            (target.y > yBounds.posBoundMin && target.y < yBounds.posBoundMax)
         )
     );
-
-    return { x: target.x, y: target.y, bounds: { x, y } };
+    console.log("cur: " + currentX + ", new: " + target.x);
+    return { x: target.x, y: target.y, bounds: { xBounds, yBounds } };
 };
 
 const calculateBounds = (mood, width, height) => {
-    const bounds = { mood: mood, x: {}, y: {} };
+    const bounds = { mood: mood, xBounds: {}, yBounds: {} };
 
-    bounds.x.negBoundMax = mood * width / 2;
-    bounds.x.negBoundMin = bounds.x.negBoundMax - width * 0.1;
+    bounds.xBounds.negBoundMax = mood * width / 2;
+    bounds.xBounds.negBoundMin = bounds.xBounds.negBoundMax - width * 0.1;
 
-    bounds.x.posBoundMin = width - width / 2 * mood;
-    bounds.x.posBoundMax = bounds.x.posBoundMin + width * 0.1;
+    bounds.xBounds.posBoundMin = width - width / 2 * mood;
+    bounds.xBounds.posBoundMax = bounds.xBounds.posBoundMin + width * 0.1;
 
-    bounds.y.negBoundMin = mood * height / 2;
-    bounds.y.negBoundMax = bounds.y.negBoundMin + height * 0.1;
+    bounds.yBounds.negBoundMin = mood * height / 2;
+    bounds.yBounds.negBoundMax = bounds.yBounds.negBoundMin + height * 0.1;
 
-    bounds.y.posBoundMin = height - height / 2 * mood;
-    bounds.y.posBoundMax = bounds.y.posBoundMin + height * 0.1;
+    bounds.yBounds.posBoundMin = height - height / 2 * mood;
+    bounds.yBounds.posBoundMax = bounds.yBounds.posBoundMin + height * 0.1;
 
-    Object.keys(bounds.x).forEach(key => {
-        if (bounds.x[key] < 0) {
-            bounds.x[key] = 0;
+    Object.keys(bounds.xBounds).forEach(key => {
+        if (bounds.xBounds[key] < 0) {
+            bounds.xBounds[key] = 0;
         }
-        if (bounds.x[key] > width) {
-            bounds.x[key] = width;
+        if (bounds.xBounds[key] > width) {
+            bounds.xBounds[key] = width;
         }
     });
 
-    Object.keys(bounds.y).forEach(key => {
-        if (bounds.y[key] < 0) {
-            bounds.y[key] = 0;
+    Object.keys(bounds.yBounds).forEach(key => {
+        if (bounds.yBounds[key] < 0) {
+            bounds.yBounds[key] = 0;
         }
-        if (bounds.y[key] > height) {
-            bounds.y[key] = height;
+        if (bounds.yBounds[key] > height) {
+            bounds.yBounds[key] = height;
         }
     });
 
@@ -279,98 +285,35 @@ class Particle {
         this.g = g;
         this.b = b;
         this.mood = mood;
+        this.pleasentness = mood;
+        this.activation = mood;
         this.debug = debug;
         this.bounds = null;
         this.firstDraw = true;
         this.speed = 0.5;
         this.m = null;
+        this.alpha = 255;
+        this.scale = 5;
+        this.targetScale = this.activation * 10 + 7;
+        this.scalingUp = true;
     }
 
     draw() {
         noStroke();
-        fill("white");
-        ellipse(this.x, this.y, 10);
-        if (this.debug) {
-            fill(255);
-            stroke(0);
-            text("Mood: " + this.mood, this.x, this.y + 10);
-            strokeWeight(0.5);
-            stroke(0, 0, 0);
-
-            text("x: " + this.x + " | y: " + this.y, this.x, this.y + 20);
-            strokeWeight(0.5);
-            stroke(0, 0, 0);
-
-            line(this.x, this.y, this.targetX, this.targetY);
-
-            if (this.bounds) {
-                strokeWeight(0.5);
-                stroke(0, 0, 0);
-                line(
-                    this.bounds.x.negBoundMin,
-                    this.bounds.y.negBoundMin,
-                    this.bounds.x.posBoundMax,
-                    this.bounds.y.negBoundMin
-                );
-
-                line(
-                    this.bounds.x.negBoundMin,
-                    this.bounds.y.negBoundMin,
-                    this.bounds.x.negBoundMin,
-                    this.bounds.y.posBoundMax
-                );
-
-                line(
-                    this.bounds.x.negBoundMin,
-                    this.bounds.y.posBoundMax,
-                    this.bounds.x.posBoundMax,
-                    this.bounds.y.posBoundMax
-                );
-
-                line(
-                    this.bounds.x.posBoundMax,
-                    this.bounds.y.negBoundMin,
-                    this.bounds.x.posBoundMax,
-                    this.bounds.y.posBoundMax
-                );
-
-                //inner
-
-                line(
-                    this.bounds.x.negBoundMax,
-                    this.bounds.y.negBoundMax,
-                    this.bounds.x.posBoundMin,
-                    this.bounds.y.negBoundMax
-                );
-
-                line(
-                    this.bounds.x.negBoundMax,
-                    this.bounds.y.negBoundMax,
-                    this.bounds.x.negBoundMax,
-                    this.bounds.y.posBoundMin
-                );
-
-                line(
-                    this.bounds.x.negBoundMax,
-                    this.bounds.y.posBoundMin,
-                    this.bounds.x.posBoundMin,
-                    this.bounds.y.posBoundMin
-                );
-
-                line(
-                    this.bounds.x.posBoundMin,
-                    this.bounds.y.negBoundMax,
-                    this.bounds.x.posBoundMin,
-                    this.bounds.y.posBoundMin
-                );
-            }
-        }
+        fill(255, 255, 255, this.alpha);
+        ellipse(this.x, this.y, this.scale);
+        this.debug && debugParticle(this);
+        strokeWeight(0.5);
+        stroke(0, 0, 0);
+        //line(this.x, this.y, this.targetX, this.targetY);
     }
 
-    updateTargets(x, y, bounds) {
+    updateTargets(x, y, bounds, alpha) {
         this.targetX = x;
         this.targetY = y;
         this.bounds = bounds;
+        this.alpha = alpha;
+        this.targetScale = this.activation * 12 + 10;
     }
 
     animate(mX, mY, maxDist) {
@@ -384,8 +327,29 @@ class Particle {
         this.g = colors[2].g * percent + colors[0].g * (1 - percent);
         this.b = colors[2].b * percent + colors[0].b * (1 - percent);
 
-        if (this.x === this.targetX && this.y === this.targetY) {
-            this.m = null;
+        if (this.scale < this.targetScale && this.scalingUp) {
+            this.scale = this.scale + 1 * this.mood;
+        }
+
+        if (this.scale >= this.targetScale && this.scalingUp) {
+            this.scalingUp = false;
+        }
+
+        if (this.scale > 5 && !this.scalingUp) {
+            this.scale = this.scale - 1 * this.mood;
+        }
+
+        if (this.scale <= 5 && !this.scalingUp) {
+            this.scalingUp = true;
+        }
+
+        if (
+            this.x < this.targetX + 1 &&
+            this.x > this.targetX - 1 &&
+            this.y < this.targetY + 1 &&
+            this.y > this.targetY - 1
+        ) {
+            //this.m = null;
             return false;
         } else {
             /*
@@ -437,14 +401,110 @@ function createParticles(numberOfParticles) {
     for (var i = 0; i < numberOfParticles; i++) {
         const mood = random(1);
 
-        const x = Math.round(random(width));
-        const y = Math.round(random(height));
+        let x = 0;
+        let y = 0;
+
+        const { xBounds, yBounds } = calculateBounds(mood, width, height);
+
+        do {
+            x = random(width);
+        } while (
+            !(
+                (x > xBounds.negBoundMin && x < xBounds.negBoundMax) ||
+                (x > xBounds.posBoundMin && x < xBounds.posBoundMax)
+            )
+        );
+
+        do {
+            y = random(height);
+        } while (
+            !(
+                (y > yBounds.negBoundMin && y < yBounds.negBoundMax) ||
+                (y > yBounds.posBoundMin && y < yBounds.posBoundMax)
+            )
+        );
 
         result.push(new Particle(x, y, mood));
     }
 
     return result;
 }
+
+const debugParticle = target => {
+    fill(255);
+    stroke(0);
+    text("Mood: " + target.mood, target.x, target.y + 10);
+    strokeWeight(0.5);
+    stroke(0, 0, 0);
+
+    text("x: " + target.x + " | y: " + target.y, target.x, target.y + 20);
+    strokeWeight(0.5);
+    stroke(0, 0, 0);
+
+    line(target.x, target.y, target.targetX, target.targetY);
+
+    if (target.bounds && false) {
+        strokeWeight(0.5);
+        stroke(0, 0, 0);
+        line(
+            target.bounds.x.negBoundMin,
+            target.bounds.y.negBoundMin,
+            target.bounds.x.posBoundMax,
+            target.bounds.y.negBoundMin
+        );
+
+        line(
+            target.bounds.x.negBoundMin,
+            target.bounds.y.negBoundMin,
+            target.bounds.x.negBoundMin,
+            target.bounds.y.posBoundMax
+        );
+
+        line(
+            target.bounds.x.negBoundMin,
+            target.bounds.y.posBoundMax,
+            target.bounds.x.posBoundMax,
+            target.bounds.y.posBoundMax
+        );
+
+        line(
+            target.bounds.x.posBoundMax,
+            target.bounds.y.negBoundMin,
+            target.bounds.x.posBoundMax,
+            target.bounds.y.posBoundMax
+        );
+
+        //inner
+
+        line(
+            target.bounds.x.negBoundMax,
+            target.bounds.y.negBoundMax,
+            target.bounds.x.posBoundMin,
+            target.bounds.y.negBoundMax
+        );
+
+        line(
+            target.bounds.x.negBoundMax,
+            target.bounds.y.negBoundMax,
+            target.bounds.x.negBoundMax,
+            target.bounds.y.posBoundMin
+        );
+
+        line(
+            target.bounds.x.negBoundMax,
+            target.bounds.y.posBoundMin,
+            target.bounds.x.posBoundMin,
+            target.bounds.y.posBoundMin
+        );
+
+        line(
+            target.bounds.x.posBoundMin,
+            target.bounds.y.negBoundMax,
+            target.bounds.x.posBoundMin,
+            target.bounds.y.posBoundMin
+        );
+    }
+};
 
 const sliderControlSetup = () => {
     const btnSliderMenu = document.getElementById("btn-slider-menu");
@@ -509,7 +569,7 @@ const calculateVertices = (particles, maxDist) => {
 const drawEdges = (vertices, maxDist) => {
     vertices.forEach(vertex => {
         const alpha = (1 - vertex.dist / maxDist) * 100;
-        const strokeW = 1 - vertex.dist / maxDist + 0.25;
+        const strokeW = 1 - vertex.dist / maxDist + 0.2;
         strokeWeight(strokeW);
         stroke(255, 255, 255, alpha);
         line(vertex.x1, vertex.y1, vertex.x2, vertex.y2);

@@ -8,98 +8,35 @@ class Particle {
         this.g = g;
         this.b = b;
         this.mood = mood;
+        this.pleasentness = mood;
+        this.activation = mood;
         this.debug = debug;
         this.bounds = null;
         this.firstDraw = true;
         this.speed = 0.5;
         this.m = null;
+        this.alpha = 255;
+        this.scale = 5;
+        this.targetScale = this.activation * 10 + 7;
+        this.scalingUp = true;
     }
 
     draw() {
         noStroke();
-        fill("white");
-        ellipse(this.x, this.y, 10);
-        if (this.debug) {
-            fill(255);
-            stroke(0);
-            text("Mood: " + this.mood, this.x, this.y + 10);
-            strokeWeight(0.5);
-            stroke(0, 0, 0);
-
-            text("x: " + this.x + " | y: " + this.y, this.x, this.y + 20);
-            strokeWeight(0.5);
-            stroke(0, 0, 0);
-
-            line(this.x, this.y, this.targetX, this.targetY);
-
-            if (this.bounds) {
-                strokeWeight(0.5);
-                stroke(0, 0, 0);
-                line(
-                    this.bounds.x.negBoundMin,
-                    this.bounds.y.negBoundMin,
-                    this.bounds.x.posBoundMax,
-                    this.bounds.y.negBoundMin
-                );
-
-                line(
-                    this.bounds.x.negBoundMin,
-                    this.bounds.y.negBoundMin,
-                    this.bounds.x.negBoundMin,
-                    this.bounds.y.posBoundMax
-                );
-
-                line(
-                    this.bounds.x.negBoundMin,
-                    this.bounds.y.posBoundMax,
-                    this.bounds.x.posBoundMax,
-                    this.bounds.y.posBoundMax
-                );
-
-                line(
-                    this.bounds.x.posBoundMax,
-                    this.bounds.y.negBoundMin,
-                    this.bounds.x.posBoundMax,
-                    this.bounds.y.posBoundMax
-                );
-
-                //inner
-
-                line(
-                    this.bounds.x.negBoundMax,
-                    this.bounds.y.negBoundMax,
-                    this.bounds.x.posBoundMin,
-                    this.bounds.y.negBoundMax
-                );
-
-                line(
-                    this.bounds.x.negBoundMax,
-                    this.bounds.y.negBoundMax,
-                    this.bounds.x.negBoundMax,
-                    this.bounds.y.posBoundMin
-                );
-
-                line(
-                    this.bounds.x.negBoundMax,
-                    this.bounds.y.posBoundMin,
-                    this.bounds.x.posBoundMin,
-                    this.bounds.y.posBoundMin
-                );
-
-                line(
-                    this.bounds.x.posBoundMin,
-                    this.bounds.y.negBoundMax,
-                    this.bounds.x.posBoundMin,
-                    this.bounds.y.posBoundMin
-                );
-            }
-        }
+        fill(255, 255, 255, this.alpha);
+        ellipse(this.x, this.y, this.scale);
+        this.debug && debugParticle(this);
+        strokeWeight(0.5);
+        stroke(0, 0, 0);
+        //line(this.x, this.y, this.targetX, this.targetY);
     }
 
-    updateTargets(x, y, bounds) {
+    updateTargets(x, y, bounds, alpha) {
         this.targetX = x;
         this.targetY = y;
         this.bounds = bounds;
+        this.alpha = alpha;
+        this.targetScale = this.activation * 12 + 10;
     }
 
     animate(mX, mY, maxDist) {
@@ -113,8 +50,29 @@ class Particle {
         this.g = colors[2].g * percent + colors[0].g * (1 - percent);
         this.b = colors[2].b * percent + colors[0].b * (1 - percent);
 
-        if (this.x === this.targetX && this.y === this.targetY) {
-            this.m = null;
+        if (this.scale < this.targetScale && this.scalingUp) {
+            this.scale = this.scale + 1 * this.mood;
+        }
+
+        if (this.scale >= this.targetScale && this.scalingUp) {
+            this.scalingUp = false;
+        }
+
+        if (this.scale > 5 && !this.scalingUp) {
+            this.scale = this.scale - 1 * this.mood;
+        }
+
+        if (this.scale <= 5 && !this.scalingUp) {
+            this.scalingUp = true;
+        }
+
+        if (
+            this.x < this.targetX + 1 &&
+            this.x > this.targetX - 1 &&
+            this.y < this.targetY + 1 &&
+            this.y > this.targetY - 1
+        ) {
+            //this.m = null;
             return false;
         } else {
             /*
@@ -166,11 +124,107 @@ function createParticles(numberOfParticles) {
     for (var i = 0; i < numberOfParticles; i++) {
         const mood = random(1);
 
-        const x = Math.round(random(width));
-        const y = Math.round(random(height));
+        let x = 0;
+        let y = 0;
+
+        const { xBounds, yBounds } = calculateBounds(mood, width, height);
+
+        do {
+            x = random(width);
+        } while (
+            !(
+                (x > xBounds.negBoundMin && x < xBounds.negBoundMax) ||
+                (x > xBounds.posBoundMin && x < xBounds.posBoundMax)
+            )
+        );
+
+        do {
+            y = random(height);
+        } while (
+            !(
+                (y > yBounds.negBoundMin && y < yBounds.negBoundMax) ||
+                (y > yBounds.posBoundMin && y < yBounds.posBoundMax)
+            )
+        );
 
         result.push(new Particle(x, y, mood));
     }
 
     return result;
 }
+
+const debugParticle = target => {
+    fill(255);
+    stroke(0);
+    text("Mood: " + target.mood, target.x, target.y + 10);
+    strokeWeight(0.5);
+    stroke(0, 0, 0);
+
+    text("x: " + target.x + " | y: " + target.y, target.x, target.y + 20);
+    strokeWeight(0.5);
+    stroke(0, 0, 0);
+
+    line(target.x, target.y, target.targetX, target.targetY);
+
+    if (target.bounds && false) {
+        strokeWeight(0.5);
+        stroke(0, 0, 0);
+        line(
+            target.bounds.x.negBoundMin,
+            target.bounds.y.negBoundMin,
+            target.bounds.x.posBoundMax,
+            target.bounds.y.negBoundMin
+        );
+
+        line(
+            target.bounds.x.negBoundMin,
+            target.bounds.y.negBoundMin,
+            target.bounds.x.negBoundMin,
+            target.bounds.y.posBoundMax
+        );
+
+        line(
+            target.bounds.x.negBoundMin,
+            target.bounds.y.posBoundMax,
+            target.bounds.x.posBoundMax,
+            target.bounds.y.posBoundMax
+        );
+
+        line(
+            target.bounds.x.posBoundMax,
+            target.bounds.y.negBoundMin,
+            target.bounds.x.posBoundMax,
+            target.bounds.y.posBoundMax
+        );
+
+        //inner
+
+        line(
+            target.bounds.x.negBoundMax,
+            target.bounds.y.negBoundMax,
+            target.bounds.x.posBoundMin,
+            target.bounds.y.negBoundMax
+        );
+
+        line(
+            target.bounds.x.negBoundMax,
+            target.bounds.y.negBoundMax,
+            target.bounds.x.negBoundMax,
+            target.bounds.y.posBoundMin
+        );
+
+        line(
+            target.bounds.x.negBoundMax,
+            target.bounds.y.posBoundMin,
+            target.bounds.x.posBoundMin,
+            target.bounds.y.posBoundMin
+        );
+
+        line(
+            target.bounds.x.posBoundMin,
+            target.bounds.y.negBoundMax,
+            target.bounds.x.posBoundMin,
+            target.bounds.y.posBoundMin
+        );
+    }
+};
